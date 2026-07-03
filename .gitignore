@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.env
+.venv/
+
+# Terraform
+terraform/.terraform/
+terraform/*.tfstate*
+terraform/*.tfvars
+!terraform/terraform.tfvars.example
+
+# IDE
+.idea/
+.vscode/
+*.swp
