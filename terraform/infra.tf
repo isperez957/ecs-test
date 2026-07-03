@@ -13,7 +13,7 @@ resource "aws_vpc" "main" {
 resource "aws_subnet" "public" {
   count                   = 2
   vpc_id                  = aws_vpc.main.id
-  cidr_block              = cidrblock("10.0.0.0/16", 8, count.index)
+  cidr_block              = cidrsubnet("10.0.0.0/16", 8, count.index)
   availability_zone       = data.aws_availability_zones.available.names[count.index]
   map_public_ip_on_launch = true
 
@@ -23,7 +23,7 @@ resource "aws_subnet" "public" {
 resource "aws_subnet" "private" {
   count             = 2
   vpc_id            = aws_vpc.main.id
-  cidr_block        = cidrblock("10.0.0.0/16", 8, count.index + 2)
+  cidr_block        = cidrsubnet("10.0.0.0/16", 8, count.index + 2)
   availability_zone = data.aws_availability_zones.available.names[count.index]
 
   tags = { Name = "${var.app_name}-private-${count.index + 1}" }
@@ -39,7 +39,7 @@ resource "aws_eip" "nat" {
   domain = "vpc"
 }
 
-resource "aws_natgateway" "main" {
+resource "aws_nat_gateway" "main" {
   allocation_id = aws_eip.nat.id
   subnet_id     = aws_subnet.public[0].id
 
@@ -62,7 +62,7 @@ resource "aws_route_table" "private" {
 
   route {
     cidr_block     = "0.0.0.0/0"
-    nat_gateway_id = aws_natgateway.main.id
+    nat_gateway_id = aws_nat_gateway.main.id
   }
 
   tags = { Name = "${var.app_name}-private-rt" }
@@ -84,7 +84,7 @@ resource "aws_route_table_association" "private" {
 
 resource "aws_security_group" "alb" {
   name        = "${var.app_name}-alb-sg"
-  description = "ALB — allow HTTP from anywhere"
+  description = "ALB - allow HTTP from anywhere"
   vpc_id      = aws_vpc.main.id
 
   ingress {
@@ -104,7 +104,7 @@ resource "aws_security_group" "alb" {
 
 resource "aws_security_group" "ecs" {
   name        = "${var.app_name}-ecs-sg"
-  description = "ECS tasks — allow traffic from ALB only"
+  description = "ECS tasks - allow traffic from ALB only"
   vpc_id      = aws_vpc.main.id
 
   ingress {
